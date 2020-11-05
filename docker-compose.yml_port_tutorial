@@ -1,0 +1,78 @@
+# MySQL + phpMyAdmin + Adminer
+
+# docker run --rm --name dolphin -v mysql_datavolume1:/var/lib/mysql -p 3306:3306 -d -e MYSQL_ROOT_PASSWORD=banana mysql
+
+# docker run --rm --name whale -v mysql_datavolume2:/var/lib/mysql -p 3307:3306 -d -e MYSQL_ROOT_PASSWORD=coconut mysql
+
+# docker run --rm --name myadmin -d -p 8080:80 -e PMA_ARBITRARY=1 phpmyadmin/phpmyadmin
+
+# docker run --rm --name atlas -d -p 8888:8080 adminer
+
+# docker run --rm --name atlas -d -p 8888:8080 --link dolphin:db adminer
+# docker run --rm --name atlas2 -d -p 8889:8080 --link whale:db adminer
+
+version: '3'
+
+networks:
+  dev_network:
+
+volumes:
+  db1_data:
+  db2_data:
+
+services:
+  # MySQL
+  db1:
+    image: mysql:latest
+    container_name: dolphin
+    volumes:
+      - db1_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: banana
+    ports:
+      - '3306:3306'
+    networks:
+    - dev_network
+
+  db2:
+    image: mysql:latest
+    container_name: whale
+    volumes:
+      - db2_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: coconut
+    ports:
+      - '3307:3306'
+    networks:
+    - dev_network
+
+      # phpmyadmin
+  phpmyadmin:
+    # depends_on:
+    #   - db
+    image: phpmyadmin/phpmyadmin
+    container_name: myadmin
+    restart: always
+    ports:
+      - '8080:80'
+    environment:
+      # PMA_HOST: db2
+      PMA_ARBITRARY: 1
+      MYSQL_ROOT_PASSWORD: banana 
+    networks:
+      - dev_network
+
+  adminer:
+    # depends_on:
+    #   - db1
+    image: adminer:latest
+    container_name: atlas
+    environment:
+      ADMINER_DEFAULT_SERVER: db2
+    ports:
+      - 8888:8080
+    networks:
+      - dev_network
+

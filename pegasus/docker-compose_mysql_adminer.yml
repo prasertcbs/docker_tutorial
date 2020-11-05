@@ -1,0 +1,38 @@
+# MySQL + Adminer
+
+# docker run --rm --name dolphin -v mysql_datavolume:/var/lib/mysql -p 3306:3306 -p 33060:33060/tcp -d -e MYSQL_ROOT_PASSWORD=banana mysql
+# docker run --rm --name atlas -d -p 8080:8080 --link dolphin:db adminer
+# docker run --rm --name atlas -d -p 8080:8080 --link dolphin:db -e ADMINER_DEFAULT_SERVER=dolphin adminer
+
+version: '3'
+
+services:
+  db:
+    image: mysql:latest
+    # container_name: dolphin
+    # command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: banana
+    ports:
+      - 3306:3306
+      - 33060:33060
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - dev_network
+
+  adminer:
+    image: adminer:latest
+    container_name: atlas
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - 8080:8080
+    networks:
+      - dev_network
+
+volumes:
+  db_data:
+
+  networks:
+    - dev_network
